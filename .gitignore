@@ -1,0 +1,25 @@
+# build output
+build/bin
+build/darwin
+build/installer
+build/windows/*.o
+
+# local tooling & internal docs (not published)
+.claude/
+docs/
+
+# wpf (.NET)
+wpf/**/bin/
+wpf/**/obj/
+
+# go
+*.exe
+*.test
+*.out
+
+# editor / os
+.idea
+.vscode
+.DS_Store
+Thumbs.db
+*.log

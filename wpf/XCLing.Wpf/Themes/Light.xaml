@@ -1,0 +1,27 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- 明亮配色：清爽、干净、专业。 -->
+    <SolidColorBrush x:Key="Surface0Brush" Color="#FFF6F7F9"/>
+    <SolidColorBrush x:Key="Surface1Brush" Color="#FFFBFBFC"/>
+    <SolidColorBrush x:Key="Surface2Brush" Color="#FFFFFFFF"/>
+    <SolidColorBrush x:Key="Surface3Brush" Color="#FFF1F3F5"/>
+    <SolidColorBrush x:Key="Surface4Brush" Color="#FFE7EAEE"/>
+    <SolidColorBrush x:Key="Text0Brush" Color="#FF1A1D21"/>
+    <SolidColorBrush x:Key="Text1Brush" Color="#FF3C4248"/>
+    <SolidColorBrush x:Key="Text2Brush" Color="#FF6B7178"/>
+    <SolidColorBrush x:Key="Text3Brush" Color="#FF9CA1A8"/>
+    <SolidColorBrush x:Key="CardBorderBrush" Color="#FFE5E7EB"/>
+    <SolidColorBrush x:Key="Border0Brush" Color="#22000000"/>
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#FF2F80ED"/>
+    <SolidColorBrush x:Key="PrimaryHoverBrush" Color="#FF1E6FD8"/>
+    <SolidColorBrush x:Key="DangerBrush" Color="#FFD63A4D"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="#FFE08A1F"/>
+    <SolidColorBrush x:Key="SuccessBrush" Color="#FF10B981"/>
+    <SolidColorBrush x:Key="DangerHoverBrush" Color="#22D63A4D"/>
+    <SolidColorBrush x:Key="WarningHoverBrush" Color="#22E08A1F"/>
+
+    <!-- 亮色主题阴影：极淡、贴近现代Fluid设计
+         非常小的模糊距离、极低不透明度，模拟自然光照效果，不喧宾夺主 -->
+    <DropShadowEffect x:Key="PgCardShadow" Color="#18000000" BlurRadius="8" ShadowDepth="1" Opacity="0.3" Direction="270"/>
+</ResourceDictionary>

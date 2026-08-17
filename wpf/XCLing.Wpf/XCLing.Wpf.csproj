@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- net48 是同时覆盖 Win7 SP1 与 Win10/11 的最后一个 .NET Framework 版本（4.8.1 不支持 Win7）。 -->
+    <TargetFramework>net48</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <!-- 托盘 NotifyIcon 来自 WinForms。 -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <LangVersion>8.0</LangVersion>
+    <PlatformTarget>x64</PlatformTarget>
+    <RootNamespace>XCLing.Wpf</RootNamespace>
+    <AssemblyName>XCLing.Wpf</AssemblyName>
+    <ApplicationIcon>..\..\build\windows\icon.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- 版本号唯一来源是仓库根目录的 VERSION 文件，修改版本只改那一处。 -->
+    <Version>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)\..\..\VERSION').Trim())</Version>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <!-- 允许在未安装 .NET Framework 4.8 Targeting Pack 的机器（含 CI）上编译 net48。 -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 复用仓库根目录的 logo 切图，避免在项目内复制一份。 -->
+    <Resource Include="..\..\logo\256.png" Link="Assets\logo.png" />
+    <!-- 捐助收款二维码（微信 / 支付宝）。 -->
+    <Resource Include="Assets\donate.jpg" />
+  </ItemGroup>
+
+</Project>

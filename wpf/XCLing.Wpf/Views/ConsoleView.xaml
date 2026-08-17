@@ -1,0 +1,225 @@
+<UserControl x:Class="XCLing.Wpf.Views.ConsoleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FontFamily="{StaticResource PgFontFamily}">
+    <StackPanel>
+
+        <!-- 总控制台：logo + 状态指示 + 锁定/解锁主操作（未启用时主按钮隐藏，改由下方模式卡启用）。 -->
+        <Border Style="{DynamicResource PgCard}" Padding="28,24">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Image Grid.Column="0" Source="/Assets/logo.png" Width="72" Height="72"
+                       VerticalAlignment="Center" Margin="0,0,24,0"
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="总控制台" Style="{DynamicResource PgCaption}"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,6">
+                        <Ellipse Width="14" Height="14" VerticalAlignment="Center" Margin="0,2,10,0">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Fill" Value="{DynamicResource Text3Brush}"/>
+                                    <Setter Property="Effect">
+                                        <Setter.Value>
+                                            <DropShadowEffect Color="#20000000" BlurRadius="10" ShadowDepth="0" Opacity="0.5"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding State}" Value="locked">
+                                            <Setter Property="Fill" Value="{DynamicResource SuccessBrush}"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding State}" Value="unlocked">
+                                            <Setter Property="Fill" Value="{DynamicResource WarningBrush}"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding State}" Value="attention">
+                                            <Setter Property="Fill" Value="{DynamicResource DangerBrush}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                        <TextBlock Text="{Binding StateLabel}" Foreground="{DynamicResource Text0Brush}"
+                                   FontSize="26" FontWeight="Bold" VerticalAlignment="Center"/>
+                        <Border Background="{DynamicResource Surface3Brush}" CornerRadius="10" Padding="10,3"
+                                Margin="12,0,0,0" VerticalAlignment="Center"
+                                Visibility="{Binding IsManaged, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="{Binding ModeLabel}" Foreground="{DynamicResource Text1Brush}"
+                                       FontSize="12" FontWeight="SemiBold"/>
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="{Binding StateDescription}" Style="{DynamicResource PgCaption}"
+                               TextWrapping="Wrap" MaxWidth="540" HorizontalAlignment="Left"/>
+                </StackPanel>
+
+                <Button Grid.Column="2" VerticalAlignment="Center"
+                        Style="{DynamicResource PgPrimaryButton}"
+                        Content="{Binding PrimaryText}"
+                        Command="{Binding PrimaryCommand}"
+                        IsEnabled="{Binding PrimaryEnabled}"
+                        Visibility="{Binding ShowPrimary, Converter={StaticResource BoolToVis}}"
+                        MinWidth="160"/>
+
+                <!-- 捐助入口：总控制台顶部卡片内。 -->
+                <Button Grid.Column="3" VerticalAlignment="Center"
+                        Style="{DynamicResource PgButton}"
+                        Content="❤ 捐助"
+                        Command="{Binding DonateCommand}"
+                        Margin="12,0,0,0"
+                        Padding="16,9"
+                        ToolTip="请作者喝一杯咖啡（微信 / 支付宝）"/>
+            </Grid>
+        </Border>
+
+        <!-- 错误提示。 -->
+        <Border Background="{DynamicResource DangerHoverBrush}" CornerRadius="6" Padding="14,10" Margin="0,14,0,0"
+                Visibility="{Binding ErrorText, Converter={StaticResource StringToVis}}">
+            <TextBlock Text="{Binding ErrorText}" Foreground="{DynamicResource DangerBrush}"
+                       FontSize="13" TextWrapping="Wrap"/>
+        </Border>
+
+        <!-- 模式总开关：白名单 / 黑名单互斥，切换需先恢复原状。 -->
+        <Grid Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Style="{DynamicResource PgCard}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal">
+                        <TextBlock Text="白名单模式" Style="{DynamicResource PgCardTitle}" VerticalAlignment="Center"/>
+                        <Border Background="{DynamicResource Surface3Brush}" CornerRadius="10" Padding="10,3"
+                                Margin="10,0,0,0" VerticalAlignment="Center"
+                                Visibility="{Binding IsWhitelistActive, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="当前模式" Foreground="{DynamicResource SuccessBrush}"
+                                       FontSize="12" FontWeight="SemiBold"/>
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Grid.Row="1" Style="{DynamicResource PgCaption}" Margin="0,8,0,16" TextWrapping="Wrap"
+                               Text="默认拦截：仅系统目录与「白名单」中的程序允许运行，其余位置一律禁止启动，管控最严格。"/>
+                    <Button Grid.Row="2" Style="{DynamicResource PgPrimaryButton}" Content="启用白名单模式"
+                            Command="{Binding EnableWhitelistCommand}" IsEnabled="{Binding CanEnableMode}"
+                            HorizontalAlignment="Left" MinWidth="150"
+                            Visibility="{Binding IsWhitelistActive, Converter={StaticResource BoolToVis}, ConverterParameter=invert}"/>
+                    <TextBlock Grid.Row="2" Text="✔ 正在生效" Foreground="{DynamicResource SuccessBrush}"
+                               FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"
+                               Visibility="{Binding IsWhitelistActive, Converter={StaticResource BoolToVis}}"/>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="2" Style="{DynamicResource PgCard}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal">
+                        <TextBlock Text="黑名单模式" Style="{DynamicResource PgCardTitle}" VerticalAlignment="Center"/>
+                        <Border Background="{DynamicResource Surface3Brush}" CornerRadius="10" Padding="10,3"
+                                Margin="10,0,0,0" VerticalAlignment="Center"
+                                Visibility="{Binding IsBlacklistActive, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="当前模式" Foreground="{DynamicResource SuccessBrush}"
+                                       FontSize="12" FontWeight="SemiBold"/>
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Grid.Row="1" Style="{DynamicResource PgCaption}" Margin="0,8,0,16" TextWrapping="Wrap"
+                               Text="默认放行：所有程序正常运行，仅拦截「黑名单」中的程序，适合只需禁用少数软件的场景。"/>
+                    <Button Grid.Row="2" Style="{DynamicResource PgPrimaryButton}" Content="启用黑名单模式"
+                            Command="{Binding EnableBlacklistCommand}" IsEnabled="{Binding CanEnableMode}"
+                            HorizontalAlignment="Left" MinWidth="150"
+                            Visibility="{Binding IsBlacklistActive, Converter={StaticResource BoolToVis}, ConverterParameter=invert}"/>
+                    <TextBlock Grid.Row="2" Text="✔ 正在生效" Foreground="{DynamicResource SuccessBrush}"
+                               FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"
+                               Visibility="{Binding IsBlacklistActive, Converter={StaticResource BoolToVis}}"/>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- 切换提示：已有模式生效时说明切换路径。 -->
+        <TextBlock Style="{DynamicResource PgCaption}" Margin="4,8,0,0" TextWrapping="Wrap"
+                   Text="两种模式互斥。切换模式需先执行下方「恢复原状」解除当前策略，再启用另一种模式。"
+                   Visibility="{Binding IsManaged, Converter={StaticResource BoolToVis}}"/>
+
+        <!-- 恢复原状。 -->
+        <Border Style="{DynamicResource PgCard}" Margin="0,16,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                    <TextBlock Text="恢复原状" Style="{DynamicResource PgCardTitle}"/>
+                    <TextBlock Text="完整还原接管前的 SRP，包括原有值和规则。"
+                               Style="{DynamicResource PgCaption}" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                </StackPanel>
+                <Button Grid.Column="1" Style="{DynamicResource PgDangerButton}" Content="恢复原状"
+                        Command="{Binding RestoreCommand}" IsEnabled="{Binding CanRestore}"
+                        VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- 策略概况。 -->
+        <Border Style="{DynamicResource PgCard}" Margin="0,16,0,0">
+            <StackPanel>
+                <Grid Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="策略概况" Style="{DynamicResource PgCardTitle}"/>
+                        <TextBlock Text="默认保护所有用户（包括管理员），SRP策略对所有账户生效"
+                                   Style="{DynamicResource PgCaption}" Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <Button Grid.Column="1" Style="{DynamicResource PgButton}" Content="刷新"
+                            Command="{Binding RefreshCommand}" VerticalAlignment="Top" Padding="14,7"/>
+                </Grid>
+                <UniformGrid Columns="4">
+                    <StackPanel Margin="0,0,16,0">
+                        <TextBlock Text="策略规则" Style="{DynamicResource PgCaption}"/>
+                        <TextBlock Text="{Binding RuleCountText}" Foreground="{DynamicResource Text1Brush}"
+                                   FontSize="15" FontWeight="SemiBold" Margin="0,5,0,0"/>
+                    </StackPanel>
+                    <StackPanel Margin="0,0,16,0">
+                        <TextBlock Text="运行权限" Style="{DynamicResource PgCaption}"/>
+                        <TextBlock Text="{Binding AdminText}" Foreground="{DynamicResource Text1Brush}"
+                                   FontSize="15" FontWeight="SemiBold" Margin="0,5,0,0"/>
+                    </StackPanel>
+                    <StackPanel Margin="0,0,16,0">
+                        <TextBlock Text="接管前备份" Style="{DynamicResource PgCaption}"/>
+                        <TextBlock Text="{Binding BackupText}" Foreground="{DynamicResource Text1Brush}"
+                                   FontSize="15" FontWeight="SemiBold" Margin="0,5,0,0"/>
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="策略来源" Style="{DynamicResource PgCaption}"/>
+                        <TextBlock Text="{Binding SourceText}" Foreground="{DynamicResource Text1Brush}"
+                                   FontSize="15" FontWeight="SemiBold" Margin="0,5,0,0"/>
+                    </StackPanel>
+                </UniformGrid>
+            </StackPanel>
+        </Border>
+
+        <!-- 使用提示 -->
+        <Border Background="{DynamicResource WarningHoverBrush}" CornerRadius="6" Padding="14,12" Margin="0,14,0,0">
+            <StackPanel>
+                <TextBlock Text="⚠️  使用须知" Foreground="{DynamicResource WarningBrush}" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,6"/>
+                <TextBlock Text="白名单模式下，未加入白名单的软件将无法运行；黑名单模式下，黑名单中的软件将被拦截。若遇到软件功能受限，请前往「记录」查看拦截情况，可通过调整白名单/黑名单或临时解锁解除限制。&#10;卸载本软件前，请务必先执行下方「恢复原状」还原系统原有策略后再卸载，避免系统异常。"
+                           Foreground="{DynamicResource Text1Brush}" FontSize="13" TextWrapping="Wrap" LineHeight="20"/>
+            </StackPanel>
+        </Border>
+
+    </StackPanel>
+</UserControl>

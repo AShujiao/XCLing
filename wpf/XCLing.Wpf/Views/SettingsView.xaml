@@ -1,0 +1,115 @@
+<UserControl x:Class="XCLing.Wpf.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FontFamily="{StaticResource PgFontFamily}">
+    <StackPanel>
+        <StackPanel Margin="0,0,0,16">
+            <TextBlock Text="设置" Style="{DynamicResource PgPageTitle}"/>
+            <TextBlock Text="通用选项、主题外观与兼容性设置" Style="{DynamicResource PgCaption}" Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <!-- 主题 -->
+        <Border Style="{DynamicResource PgCard}" Margin="0,0,0,14">
+            <StackPanel>
+                <TextBlock Text="主题" Style="{DynamicResource PgCardTitle}" Margin="0,0,0,4"/>
+                <TextBlock Text="切换深色或明亮主题，立即生效。" Style="{DynamicResource PgCaption}" Margin="0,0,0,14"/>
+
+                <StackPanel Orientation="Horizontal">
+                    <RadioButton GroupName="Theme" Content="深色" IsChecked="{Binding IsDarkTheme}"
+                                 Style="{DynamicResource PgRadioButton}" Margin="0,0,20,0"/>
+                    <RadioButton GroupName="Theme" Content="明亮" IsChecked="{Binding IsLightTheme}"
+                                 Style="{DynamicResource PgRadioButton}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- 通用设置 -->
+        <Border Style="{DynamicResource PgCard}" Margin="0,0,0,14">
+            <StackPanel>
+                <TextBlock Text="通用" Style="{DynamicResource PgCardTitle}" Margin="0,0,0,14"/>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <CheckBox IsChecked="{Binding AutoStartEnabled}" Style="{DynamicResource PgCheckBox}" VerticalAlignment="Center"/>
+                    <StackPanel Margin="10,0,0,0">
+                        <TextBlock Text="开机自动启动" Foreground="{DynamicResource Text1Brush}"/>
+                        <TextBlock Text="登录 Windows 后自动运行星陈守护，最小化到系统托盘。" Style="{DynamicResource PgCaption}" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <CheckBox IsChecked="{Binding ShutdownEnabled}" Style="{DynamicResource PgCheckBox}" VerticalAlignment="Center"/>
+                    <StackPanel Margin="10,0,0,0">
+                        <TextBlock Text="定时自动关机" Foreground="{DynamicResource Text1Brush}"/>
+                        <TextBlock Text="每天设定时间自动关闭计算机，关机前有 60 秒倒计时，届时此处会出现取消按钮。" Style="{DynamicResource PgCaption}" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Visibility="{Binding ShutdownEnabled, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="关机时间：" VerticalAlignment="Center" Foreground="{DynamicResource Text1Brush}" Margin="0,0,10,0"/>
+                    <ComboBox ItemsSource="{Binding ShutdownHours}" SelectedItem="{Binding SelectedShutdownHour}"
+                              Width="100" VerticalAlignment="Center" HorizontalAlignment="Left">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding StringFormat={}{0:00}:00}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- 关机倒计时进行中才出现的取消提示 -->
+                <Border Background="{DynamicResource WarningHoverBrush}" CornerRadius="6" Padding="12,10" Margin="0,10,0,0"
+                        Visibility="{Binding ShowCancelShutdown, Converter={StaticResource BoolToVis}}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="⚠️  计算机即将关机（60 秒倒计时进行中）"
+                                   Foreground="{DynamicResource WarningBrush}" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" Margin="0,0,12,0"/>
+                        <Button Grid.Column="1" Command="{Binding CancelShutdownCommand}" Content="取消本次关机"
+                                Style="{DynamicResource PgPrimaryButton}" Padding="14,6"/>
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <!-- 兼容性 -->
+        <Border Style="{DynamicResource PgCard}" Margin="0,0,0,14">
+            <StackPanel>
+                <TextBlock Text="兼容性" Style="{DynamicResource PgCardTitle}" Margin="0,0,0,4"/>
+                <TextBlock Text="允许部分系统组件绕过 SRP，以维持 Windows 正常运转。" Style="{DynamicResource PgCaption}" Margin="0,0,0,14"/>
+
+                <StackPanel Margin="0,0,0,8">
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox IsChecked="{Binding AllowPackagedApps}" Style="{DynamicResource PgCheckBox}" VerticalAlignment="Center"/>
+                        <StackPanel Margin="10,0,0,0">
+                            <TextBlock Text="允许 Packaged Apps（UWP/Store 应用）" Foreground="{DynamicResource Text1Brush}"/>
+                            <TextBlock Text="绕过 SRP，以系统内置 AppX 解析规则运行。" Style="{DynamicResource PgCaption}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Margin="0,0,0,8">
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox IsChecked="{Binding AllowDefenderUpdates}" Style="{DynamicResource PgCheckBox}" VerticalAlignment="Center"/>
+                        <StackPanel Margin="10,0,0,0">
+                            <TextBlock Text="允许 Defender 每日更新" Foreground="{DynamicResource Text1Brush}"/>
+                            <TextBlock Text="MpCmdRun.exe SignatureUpdate 的每次执行路径不同。" Style="{DynamicResource PgCaption}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- 关于 -->
+        <Border Style="{DynamicResource PgCard}">
+            <StackPanel>
+                <TextBlock Text="关于" Style="{DynamicResource PgCardTitle}" Margin="0,0,0,10"/>
+                <TextBlock Text="星陈守护 使用 Windows 原生软件限制策略（SRP）保护普通用户。"
+                           Foreground="{DynamicResource Text1Brush}" TextWrapping="Wrap"/>
+                <TextBlock Text="所有规则均写入注册表 HKLM\\Software\\Policies\\Microsoft\\Windows\\Safer，可在恢复原状后完整还原。"
+                           Style="{DynamicResource PgCaption}" Margin="0,6,0,0" TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>
