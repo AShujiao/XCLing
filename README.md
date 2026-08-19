@@ -398,6 +398,9 @@ Win7 SP1 需要 **SHA-2 支持更新**（KB4490628、KB4474419）才能加载现
 
 ---
 
+## 致谢
+感谢 [Linux.do](https://linux.do/) 社区对项目推广与反馈的支持。
+
 ## 📄 许可证
 
 本项目采用 **MIT License** 开源，详见 [LICENSE](LICENSE)。
