@@ -34,20 +34,6 @@ namespace XCLing.Wpf.Core
             throw new NotSupportedException();
     }
 
-    /// <summary>bool → 反转的 bool。</summary>
-    public sealed class InverseBoolConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return value is bool b ? !b : true;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return value is bool b ? !b : false;
-        }
-    }
-
     /// <summary>ISO 时间字符串 → 本地可读时间；空/非法原样或返回破折号。</summary>
     public sealed class TimeConverter : IValueConverter
     {

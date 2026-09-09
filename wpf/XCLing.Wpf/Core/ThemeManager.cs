@@ -16,18 +16,15 @@ namespace XCLing.Wpf.Core
         public const string Dark = "dark";
         public const string Light = "light";
 
-        private static string _current = Dark;
+        private static string _current;
 
         /// <summary>当前已应用的主题名称（dark 或 light）。</summary>
         public static string Current => _current;
 
-        /// <summary>应用指定主题。theme 为 dark 或 light，其他值回退 dark。</summary>
+        /// <summary>应用指定主题。非法值回退浅色。</summary>
         public static void Apply(string theme)
         {
-            if (!string.Equals(theme, Light, StringComparison.OrdinalIgnoreCase))
-            {
-                theme = Dark;
-            }
+            theme = string.Equals(theme, Dark, StringComparison.OrdinalIgnoreCase) ? Dark : Light;
 
             if (string.Equals(_current, theme, StringComparison.OrdinalIgnoreCase))
             {
@@ -82,18 +79,8 @@ namespace XCLing.Wpf.Core
         /// <summary>初始化主题管理器。</summary>
         public static void Init(string theme)
         {
-            if (!string.Equals(theme, Light, StringComparison.OrdinalIgnoreCase))
-            {
-                theme = Dark;
-            }
-
-            _current = theme;
-
-            // 如果保存的是浅色主题，应用它
-            if (string.Equals(theme, Light, StringComparison.OrdinalIgnoreCase) && Application.Current != null)
-            {
-                Apply(theme);
-            }
+            _current = null;
+            Apply(theme);
         }
 
         private static ResourceDictionary FindThemeDictionary()
@@ -115,8 +102,8 @@ namespace XCLing.Wpf.Core
         {
             if (source == null) return false;
             var s = source.OriginalString;
-            return s.EndsWith("/Themes/Dark.xaml", StringComparison.OrdinalIgnoreCase) ||
-                   s.EndsWith("/Themes/Light.xaml", StringComparison.OrdinalIgnoreCase);
+            return s.EndsWith("Themes/Dark.xaml", StringComparison.OrdinalIgnoreCase) ||
+                   s.EndsWith("Themes/Light.xaml", StringComparison.OrdinalIgnoreCase);
         }
 
         private static void TryRefreshVisualTree()

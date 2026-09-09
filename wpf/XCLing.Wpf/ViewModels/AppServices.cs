@@ -41,10 +41,24 @@ namespace XCLing.Wpf.ViewModels
         public Action ShowDonate { get; }
 
         /// <summary>
-        /// 保护未启用时用户在“规则维护”页添加的待启用路径，启用保护时一并纳入草案。
-        /// 与 Vue 版共享 whitelist store 的 customPaths 行为对齐（跨页面共享）。
+        /// 保护未启用时用户在“白名单”页添加的待启用路径，启用保护时一并纳入草案。
+        /// 跨页面共享，白名单页与概览启用流程读取同一份列表。
         /// </summary>
         public ObservableCollection<CustomPathEntry> PendingPaths { get; } = new ObservableCollection<CustomPathEntry>();
+
+        /// <summary>
+        /// 策略生效形态发生变化（从放行变为拦截、或反之）后调用：
+        /// 资源管理器需要重新加载策略才能拦截双击启动的程序，必要时在这里重启它。
+        /// </summary>
+        public async System.Threading.Tasks.Task NotifyPolicyShapeChangedAsync()
+        {
+            var restarted = await System.Threading.Tasks.Task.Run(
+                () => Core.ShellRefresh.MarkAndRefresh(Settings));
+            if (restarted)
+            {
+                Toast("已重启资源管理器，新策略对双击启动的程序即时生效", false);
+            }
+        }
     }
 }
 

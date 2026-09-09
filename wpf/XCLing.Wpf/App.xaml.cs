@@ -37,21 +37,12 @@ namespace XCLing.Wpf
             InstallCrashLogging();
             var minimized = HasMinimizedFlag(e.Args);
 
-            // 应用持久化的主题（默认深色）。App.xaml 已加载 Dark.xaml + Shared.xaml，
-            // 如果持久化的是 light 则需要切换；如果是 dark 则仅初始化状态。
+            // 先恢复用户主题，再创建窗口。
             try
             {
-                var savedTheme = Settings.Load().Theme;
-                if (string.Equals(savedTheme, ThemeManager.Light, StringComparison.OrdinalIgnoreCase))
-                {
-                    ThemeManager.Apply(ThemeManager.Light);
-                }
-                else
-                {
-                    ThemeManager.Init(ThemeManager.Dark);
-                }
+                ThemeManager.Init(Settings.Load().Theme);
             }
-            catch { /* 主题加载失败回退默认深色 */ }
+            catch { /* 保留默认浅色主题。 */ }
 
             bool createdNew;
             _instanceMutex = new Mutex(true, MutexName, out createdNew);
@@ -125,6 +116,21 @@ namespace XCLing.Wpf
                 _window.Show();
             }
             await _main.ActivateInitialAsync();
+
+            // 上次运行改动了策略生效形态但没能重启资源管理器（例如应用被提前关闭）时补做一次，
+            // 否则双击启动的程序会继续按旧策略放行。
+            try
+            {
+                if (Core.ShellRefresh.IsShellStale(_main.Settings) &&
+                    Core.ShellRefresh.TryRefresh(_main.Settings, out _))
+                {
+                    _main.Toast("已重启资源管理器，新策略对双击启动的程序即时生效", false);
+                }
+            }
+            catch
+            {
+                // 刷新失败不影响主流程，概览页会继续显示手动重启入口。
+            }
         }
 
         protected override void OnExit(ExitEventArgs e)

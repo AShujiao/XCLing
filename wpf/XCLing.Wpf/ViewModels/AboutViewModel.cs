@@ -33,7 +33,6 @@ namespace XCLing.Wpf.ViewModels
         public string Contact => "209820988@qq.com";
         public string Copyright => "Copyright © 2026 满猪星";
         public string License => "MIT License";
-        public string Acknowledgments => "";
 
         /// <summary>检查更新结果文案（进行中/成功/失败均在这里展示）。</summary>
         public string UpdateStatus

@@ -3,6 +3,6 @@
 package platform
 
 // TerminateProcessesMatching 非 Windows 平台无 SRP，恒为空操作。
-func TerminateProcessesMatching(matches func(imagePath string) bool) int {
-	return 0
+func TerminateProcessesMatching(matches func(imagePath string) bool) (killed, failed int) {
+	return 0, 0
 }
