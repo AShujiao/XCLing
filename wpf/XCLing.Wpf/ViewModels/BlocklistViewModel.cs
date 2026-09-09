@@ -8,7 +8,7 @@ using XCLing.Wpf.Models;
 
 namespace XCLing.Wpf.ViewModels
 {
-    /// <summary>黑名单：预设厂商包一键应用 + 扫描本机安装软件 + 手动添加规则。启用/切换模式统一在主控制台。</summary>
+    /// <summary>黑名单：预设厂商包一键应用 + 扫描本机安装软件 + 手动添加规则。启用/切换模式统一在「概览」。</summary>
     public sealed class BlocklistViewModel : ViewModelBase, IPageViewModel
     {
         private readonly AppServices _svc;
@@ -57,7 +57,7 @@ namespace XCLing.Wpf.ViewModels
         public bool Enforcing => _status?.Enforcing ?? false;
         public bool IsAdmin => _status?.IsAdmin ?? false;
         public int RuleCount => _status?.RuleCount ?? 0;
-        /// <summary>保护完全未启用时提示先去主控制台启用黑名单模式。</summary>
+        /// <summary>保护完全未启用时提示先去「概览」启用黑名单模式。</summary>
         public bool ShowNotEnabledWarning => _status != null && _status.ProtectionState == "unmanaged";
         public string StatusText => _status == null
             ? "正在加载..."
@@ -76,14 +76,11 @@ namespace XCLing.Wpf.ViewModels
 
         private async Task RefreshAsync()
         {
-            System.Diagnostics.Debug.WriteLine("BlocklistViewModel.RefreshAsync started");
             Busy = true;
             Error = "";
             try
             {
-                System.Diagnostics.Debug.WriteLine("Calling GetBlocklistStatus...");
                 _status = await _svc.Api.GetBlocklistStatus();
-                System.Diagnostics.Debug.WriteLine($"GetBlocklistStatus returned: {_status != null}");
 
                 if (_status == null)
                 {
@@ -91,20 +88,12 @@ namespace XCLing.Wpf.ViewModels
                     return;
                 }
 
-                System.Diagnostics.Debug.WriteLine($"Status.Vendors count: {_status.Vendors?.Count ?? 0}");
-                System.Diagnostics.Debug.WriteLine($"Status.Rules count: {_status.Rules?.Count ?? 0}");
-
                 SyncVendors(_status.Vendors);
-                System.Diagnostics.Debug.WriteLine($"Synced {Vendors.Count} vendors");
                 SyncRules(_status.Rules);
-                System.Diagnostics.Debug.WriteLine($"Synced {Rules.Count} rules");
                 RaiseAll();
-                System.Diagnostics.Debug.WriteLine("RefreshAsync completed successfully");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"RefreshAsync error: {ex}");
-                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
                 Error = ErrorMessages.Humanize(ex, _svc.AppName);
             }
             finally
@@ -117,6 +106,9 @@ namespace XCLing.Wpf.ViewModels
         {
             var pattern = NewPattern;
             var kind = NewKind;
+            // 第一条拦截规则会新建 SRP 的 0\Paths 键，属于策略生效形态变化：
+            // 已在运行的资源管理器不会采用它，需要重新加载才能拦住双击启动的程序。
+            var firstRule = RuleCount == 0;
             NewPattern = "";
             Busy = true;
             Error = "";
@@ -124,6 +116,10 @@ namespace XCLing.Wpf.ViewModels
             {
                 var result = await _svc.Api.AddBlockRule(pattern, kind, "");
                 _svc.Toast(result.Message, false);
+                if (firstRule)
+                {
+                    await _svc.NotifyPolicyShapeChangedAsync();
+                }
                 await RefreshAsync();
             }
             catch (Exception ex)
@@ -161,11 +157,16 @@ namespace XCLing.Wpf.ViewModels
         private async Task ApplyVendorAsync(VendorPreset vendor)
         {
             if (vendor == null) return;
+            var firstRule = RuleCount == 0;
             Busy = true;
             try
             {
                 var result = await _svc.Api.ApplyVendorPreset(vendor.Id);
                 _svc.Toast(result.Message, false);
+                if (firstRule)
+                {
+                    await _svc.NotifyPolicyShapeChangedAsync();
+                }
                 await RefreshAsync();
             }
             catch (Exception ex)
@@ -235,12 +236,24 @@ namespace XCLing.Wpf.ViewModels
         private async Task ApplyScanItemAsync(BlockedVendorScan item)
         {
             if (item == null || item.AlreadyBlocked) return;
+            var firstRule = RuleCount == 0;
             Busy = true;
             try
             {
                 var result = await _svc.Api.ApplyScanResult(new System.Collections.Generic.List<string> { item.InstallPath });
                 item.AlreadyBlocked = true;
+                // BlockedVendorScan 是纯 DTO，不实现 INotifyPropertyChanged：
+                // 用 Replace 触发条目容器重建，让「拦截」按钮立即变为「已拦截」，避免重复点击无反馈。
+                var index = ScanResults.IndexOf(item);
+                if (index >= 0)
+                {
+                    ScanResults[index] = item;
+                }
                 _svc.Toast(result.Message, false);
+                if (firstRule)
+                {
+                    await _svc.NotifyPolicyShapeChangedAsync();
+                }
                 await RefreshAsync();
             }
             catch (Exception ex)

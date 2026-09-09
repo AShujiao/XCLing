@@ -38,7 +38,7 @@ namespace XCLing.Wpf.ViewModels
         public AuditCapability Capability
         {
             get => _capability;
-            private set => Set(ref _capability, value);
+            private set { if (Set(ref _capability, value)) RaiseEmptyStates(); }
         }
 
         public int SelectedTabIndex
@@ -62,9 +62,24 @@ namespace XCLing.Wpf.ViewModels
 
         public bool ShowInterceptionTab => SelectedTabIndex == 0;
         public bool ShowOperationTab => SelectedTabIndex == 1;
-        public bool Loading { get => _loading; private set => Set(ref _loading, value); }
-        public string Error { get => _error; private set => Set(ref _error, value); }
-        public bool IsEmpty => Operations.Count == 0 && Events.Count == 0;
+        public bool Loading { get => _loading; private set { Set(ref _loading, value); RaiseEmptyStates(); CommandManager.InvalidateRequerySuggested(); } }
+        public string Error { get => _error; private set { Set(ref _error, value); RaiseEmptyStates(); } }
+        /// <summary>审计能力可用（Windows + 查询工具）：不可用时不会查询事件，空列表不代表没有拦截。</summary>
+        private bool AuditUsable => Capability != null && Capability.Available;
+        public bool ShowEmptyEvents => !Loading && string.IsNullOrEmpty(Error) && AuditUsable && !HasEvents;
+        public bool ShowEmptyOperations => !Loading && string.IsNullOrEmpty(Error) && !HasOperations;
+        /// <summary>审计能力不可用：用后端给出的原因替代「没有拦截记录」，避免误导。</summary>
+        public bool ShowAuditUnavailable => !Loading && string.IsNullOrEmpty(Error) && Capability != null && !Capability.Available;
+        public string AuditUnavailableText => string.IsNullOrWhiteSpace(Capability?.Reason)
+            ? "当前系统无法查询拦截事件。"
+            : Capability.Reason;
+        private void RaiseEmptyStates()
+        {
+            Raise(nameof(ShowEmptyEvents));
+            Raise(nameof(ShowEmptyOperations));
+            Raise(nameof(ShowAuditUnavailable));
+            Raise(nameof(AuditUnavailableText));
+        }
         public bool HasOperations => Operations.Count > 0;
         public bool HasEvents => Events.Count > 0;
         public bool ShowEnableAudit => Capability != null && Capability.AuditAvailable && !Capability.AuditEnabled;
@@ -76,7 +91,7 @@ namespace XCLing.Wpf.ViewModels
                 var parts = new System.Collections.Generic.List<string>();
                 if (Events.Count > 0) parts.Add($"最近24小时拦截 {Events.Count} 条");
                 if (Operations.Count > 0) parts.Add($"操作记录 {Operations.Count} 条");
-                if (parts.Count == 0) return "点击刷新可手动同步最新记录";
+                if (parts.Count == 0) return "最近 24 小时";
                 return string.Join("，", parts);
             }
         }
@@ -153,11 +168,11 @@ namespace XCLing.Wpf.ViewModels
                 }
 
                 // 只在审核能力可用时查询事件，默认查询最近20条
-                if (Capability.Available)
+                Events.Clear();
+                if (Capability != null && Capability.Available)
                 {
                     var filter = new { window = "24h", keyword = "", max = 20, channel = "" };
                     var result = await _svc.Api.ListBlockedEvents(Json.Serialize(filter));
-                    Events.Clear();
                     if (result != null && result.Events != null)
                     {
                         foreach (var ev in result.Events) Events.Add(ev);
@@ -171,7 +186,7 @@ namespace XCLing.Wpf.ViewModels
             finally
             {
                 Loading = false;
-                Raise(nameof(IsEmpty));
+                RaiseEmptyStates();
                 Raise(nameof(HasOperations));
                 Raise(nameof(HasEvents));
                 Raise(nameof(StatusText));

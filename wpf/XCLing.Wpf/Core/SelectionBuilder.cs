@@ -37,7 +37,7 @@ namespace XCLing.Wpf.Core
         }
 
         /// <summary>
-        /// 组装默认保护的选择（无勾选应用，self + compat + 用户待启用路径）。用于主控制台“启用保护”。
+        /// 组装默认保护的选择（无勾选应用，self + compat + 用户待启用路径）。用于「概览」页的启用保护。
         /// </summary>
         public static object DefaultSelection(string appName, string corePath, Settings settings, IEnumerable<CustomPathEntry> pending = null)
         {

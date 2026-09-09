@@ -3,7 +3,7 @@ using XCLing.Wpf.ViewModels;
 
 namespace XCLing.Wpf.Views
 {
-    /// <summary>深色主题的模态确认框，替代 Vue 版 ConfirmDialog。</summary>
+    /// <summary>跟随主题的模态确认框，用于保护模式切换、恢复原状等危险操作。</summary>
     public partial class ConfirmWindow : Window
     {
         public ConfirmWindow()

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -74,7 +75,7 @@ func (s *BlocklistService) GetBlocklistStatus() (model.BlocklistStatus, error) {
 		status.ProtectionState = model.ProtectionStateUnmanaged
 		domainJoined, domainErr := platform.IsDomainJoined()
 		status.CanEnableBlockOnly = status.IsAdmin && domainErr == nil && !domainJoined
-		status.Reason = "保护尚未启用；请前往主控制台启用黑名单模式"
+		status.Reason = "保护尚未启用；请前往「概览」启用黑名单模式"
 	}
 	status.RuleCount = len(status.Rules)
 
@@ -103,22 +104,30 @@ func (s *BlocklistService) GetVendorPresets() ([]model.VendorPreset, error) {
 // 不依赖保护状态：规则存进恢复记录；下次 WriteSRPPlan 时自动写入注册表。
 // 若保护已启用，则即时写入注册表并更新恢复记录。
 func (s *BlocklistService) ApplyVendorPreset(vendorID string) (model.BlocklistResult, error) {
-	return s.applyVendorPreset(vendorID)
+	result, err := s.applyVendorPreset(vendorID)
+	s.recordBlocklistEvent("block_vendor_add", blocklistEventMessage(result.Message, vendorDisplayName(vendorID)), err)
+	return result, err
 }
 
 // RemoveVendorPreset 移除一个预设厂商包的全部规则。
 func (s *BlocklistService) RemoveVendorPreset(vendorID string) (model.BlocklistResult, error) {
-	return s.removeVendorRules(vendorID)
+	result, err := s.removeVendorRules(vendorID)
+	s.recordBlocklistEvent("block_vendor_remove", blocklistEventMessage(result.Message, vendorDisplayName(vendorID)), err)
+	return result, err
 }
 
 // AddBlockRule 手工添加一条拦截规则（裸文件名 / 目录 / 精确文件）。
 func (s *BlocklistService) AddBlockRule(pattern, kind, label string) (model.BlocklistResult, error) {
-	return s.addBlockRules([]rawBlockInput{{pattern: pattern, kind: kind, label: label, deriveNames: true}})
+	result, err := s.addBlockRules([]rawBlockInput{{pattern: pattern, kind: kind, label: label, deriveNames: true}})
+	s.recordBlocklistEvent("block_rule_add", blocklistEventMessage(result.Message, normalizedPatternForEvent(pattern, kind)), err)
+	return result, err
 }
 
 // RemoveBlockRule 按 ID 删除一条拦截规则。
 func (s *BlocklistService) RemoveBlockRule(id string) (model.BlocklistResult, error) {
-	return s.removeBlockRulesByID([]string{id})
+	result, err := s.removeBlockRulesByID([]string{id})
+	s.recordBlocklistEvent("block_rule_remove", result.Message, err)
+	return result, err
 }
 
 // ScanVendorTargets 扫描本机已安装软件，返回命中已知垃圾软件厂商的候选列表。
@@ -179,7 +188,9 @@ func (s *BlocklistService) ApplyScanResult(installPaths []string) (model.Blockli
 			inputs = append(inputs, rawBlockInput{pattern: p, kind: model.BlockKindDirectory, label: "", deriveNames: true})
 		}
 	}
-	return s.addBlockRules(inputs)
+	result, err := s.addBlockRules(inputs)
+	s.recordBlocklistEvent("block_rule_add", blocklistEventMessage(result.Message, "扫描结果 "+strconv.Itoa(len(inputs))+" 项"), err)
+	return result, err
 }
 
 // ─── internals ────────────────────────────────────────────────────────────────
@@ -326,7 +337,7 @@ func (s *BlocklistService) mutateBlockRules(mutate blockMutation) (model.Blockli
 	record, err := recovery.Load()
 	if err != nil || !activeRecoveryRecord(record) {
 		// Protection is not yet enabled: update the record for use when it is.
-		return model.BlocklistResult{}, applyError(model.ApplyErrInvalidState, "保护尚未启用，请先在主控制台启用黑名单模式后再管理规则")
+		return model.BlocklistResult{}, applyError(model.ApplyErrInvalidState, "保护尚未启用，请先在「概览」启用黑名单模式后再管理规则")
 	}
 
 	mode := recordPolicyMode(record)
@@ -385,9 +396,16 @@ func (s *BlocklistService) mutateBlockRules(mutate blockMutation) (model.Blockli
 	msg := buildBlocklistMessage(added, removed)
 	if added > 0 {
 		// SRP 只拦新进程创建：新增规则后主动结束命中的存量进程（托盘/后台常驻），
-		// 否则用户看到"已拦截但托盘图标还在"。best-effort，失败不影响规则生效。
-		if killed := terminateBlockedProcesses(addedBlockPatterns(expected.BlockRules, updatedPlan.BlockRules)); killed > 0 {
+		// 否则用户看到"已拦截但托盘图标还在"。best-effort，失败不影响规则生效；
+		// 结束不了的要如实告知，否则用户会以为规则没生效。
+		killed, failed := terminateBlockedProcesses(addedBlockPatterns(expected.BlockRules, updatedPlan.BlockRules))
+		switch {
+		case killed > 0 && failed > 0:
+			msg += fmt.Sprintf("，已结束 %d 个正在运行的相关进程，另有 %d 个无法结束，请手动退出后重新打开", killed, failed)
+		case killed > 0:
 			msg += fmt.Sprintf("，已结束 %d 个正在运行的相关进程", killed)
+		case failed > 0:
+			msg += fmt.Sprintf("；有 %d 个相关进程正在运行且无法结束，请手动退出后重新打开", failed)
 		}
 	}
 	return model.BlocklistResult{
@@ -418,10 +436,11 @@ func addedBlockPatterns(previous, updated []pgapply.Rule) []string {
 	return added
 }
 
-// terminateBlockedProcesses 结束镜像路径命中任一拦截模式的存量进程。
-func terminateBlockedProcesses(patterns []string) int {
+// terminateBlockedProcesses 结束镜像路径命中任一拦截模式的存量进程，
+// 返回成功结束数与「已命中但无法结束」数。
+func terminateBlockedProcesses(patterns []string) (killed, failed int) {
 	if len(patterns) == 0 {
-		return 0
+		return 0, 0
 	}
 	return platform.TerminateProcessesMatching(func(imagePath string) bool {
 		return pgapply.MatchesAnyBlockPattern(imagePath, patterns)
@@ -485,4 +504,57 @@ func buildBlocklistMessage(added, removed int) string {
 		return fmt.Sprintf("已新增 %d 条拦截规则，即时生效", added)
 	}
 	return fmt.Sprintf("已移除 %d 条拦截规则，即时生效", removed)
+}
+
+// blocklistEventMessage 拼出运行记录里可读的结果说明（结果 + 具体对象）。
+func blocklistEventMessage(message, detail string) string {
+	detail = strings.TrimSpace(detail)
+	if detail == "" {
+		return message
+	}
+	if strings.TrimSpace(message) == "" {
+		return detail
+	}
+	return message + "：" + detail
+}
+
+func vendorDisplayName(vendorID string) string {
+	for _, v := range model.VendorPresets() {
+		if v.ID == vendorID {
+			return v.Name
+		}
+	}
+	return strings.TrimSpace(vendorID)
+}
+
+// normalizedPatternForEvent 还原写入注册表时的模式，仅用于运行记录文案。
+func normalizedPatternForEvent(pattern, kind string) string {
+	selfExe, _ := os.Executable()
+	if p, _, err := pgapply.NormalizeBlockPattern(pattern, kind, selfExe); err == nil {
+		return p
+	}
+	return strings.TrimSpace(pattern)
+}
+
+// recordBlocklistEvent 把拦截规则的增删写进保护操作记录。
+// 运行记录页的「操作记录」需要看到拦截规则的变更，与白名单规则变更保持一致。
+func (s *BlocklistService) recordBlocklistEvent(action, message string, operationErr error) {
+	if runtime.GOOS != "windows" {
+		return
+	}
+	events, err := store.NewProtectionEventStore()
+	if err != nil {
+		return
+	}
+	if operationErr != nil {
+		message = operationErr.Error()
+	}
+	createdAt := s.now().Local().Format(time.RFC3339Nano)
+	_ = events.Append(model.ProtectionEvent{
+		ID:        createdAt,
+		Action:    action,
+		Success:   operationErr == nil,
+		Message:   message,
+		CreatedAt: createdAt,
+	})
 }

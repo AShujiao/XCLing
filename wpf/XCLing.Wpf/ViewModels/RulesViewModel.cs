@@ -18,7 +18,6 @@ namespace XCLing.Wpf.ViewModels
         private string _search = "";
         private bool _busy;
         private bool _scanning;
-        private bool _scanned;
         private bool _showScanner;
         private string _error = "";
 
@@ -82,18 +81,16 @@ namespace XCLing.Wpf.ViewModels
         /// <summary>白名单模式未运行时引导用户先去主控制台开启。</summary>
         public bool ShowModeGuidance => Status != null && !Active;
         public string GuidanceText => IsBlacklistMode
-            ? "当前为黑名单模式，白名单规则不会生效。如需使用白名单，请先在「主控制台」恢复原状，再启用白名单模式。"
-            : "白名单模式尚未开启，此处添加的规则会保存为待启用规则。请前往「主控制台」启用白名单模式后生效。";
+            ? "当前为黑名单模式，白名单规则不会生效。如需使用白名单，请先在「概览」恢复原状，再启用白名单模式。"
+            : "白名单模式尚未开启，此处添加的规则会保存为待启用规则。请前往「概览」启用白名单模式后生效。";
 
         public string NewPath { get => _newPath; set => Set(ref _newPath, value); }
         public string NewKind { get => _newKind; set => Set(ref _newKind, value); }
         public string Search { get => _search; set { if (Set(ref _search, value)) { ApplyFilter(); } } }
         public bool Busy { get => _busy; private set => Set(ref _busy, value); }
         public bool Scanning { get => _scanning; private set => Set(ref _scanning, value); }
-        public bool Scanned { get => _scanned; private set => Set(ref _scanned, value); }
         public bool ShowScanner { get => _showScanner; set => Set(ref _showScanner, value); }
         public string Error { get => _error; private set => Set(ref _error, value); }
-        public int SelectionCount => PendingPaths.Count;
 
         public Task OnActivatedAsync() => RefreshStatusAsync();
 
@@ -187,7 +184,6 @@ namespace XCLing.Wpf.ViewModels
                     Kind = kind,
                     Label = label,
                 });
-                Raise(nameof(SelectionCount));
                 _svc.Toast("已加入待启用规则", false);
             }
         }
@@ -217,7 +213,6 @@ namespace XCLing.Wpf.ViewModels
         {
             if (entry == null) return;
             PendingPaths.Remove(entry);
-            Raise(nameof(SelectionCount));
         }
 
         private async Task ScanAsync()
@@ -228,7 +223,6 @@ namespace XCLing.Wpf.ViewModels
             {
                 var apps = await _svc.Api.ListDiscoveredApps();
                 _allApps = apps != null ? apps.ToArray() : new DiscoveredApp[0];
-                Scanned = true;
                 ApplyFilter();
             }
             catch (Exception ex)

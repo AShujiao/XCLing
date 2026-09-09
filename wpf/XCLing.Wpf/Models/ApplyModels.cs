@@ -96,6 +96,10 @@ namespace XCLing.Wpf.Models
                     case "restore": return "恢复原状";
                     case "rule_add": return "添加白名单规则";
                     case "rule_remove": return "删除白名单规则";
+                    case "block_rule_add": return "添加拦截规则";
+                    case "block_rule_remove": return "删除拦截规则";
+                    case "block_vendor_add": return "应用厂商预设";
+                    case "block_vendor_remove": return "移除厂商预设";
                     case "shutdown": return "定时关机";
                     default: return Action;
                 }

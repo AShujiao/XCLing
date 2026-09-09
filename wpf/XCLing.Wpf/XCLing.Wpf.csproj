@@ -29,6 +29,7 @@
     <Resource Include="..\..\logo\256.png" Link="Assets\logo.png" />
     <!-- 捐助收款二维码（微信 / 支付宝）。 -->
     <Resource Include="Assets\donate.jpg" />
+    <Resource Include="Assets\LUCIDE-LICENSE.txt" />
   </ItemGroup>
 
 </Project>
