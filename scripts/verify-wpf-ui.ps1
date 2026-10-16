@@ -1,6 +1,6 @@
-# WPF UI smoke check: renders every page in both themes at several window sizes and
-# bitmap scales against test data, then asserts layout, bindings, state gates and
-# virtualization. It never starts the Go core or App startup and never touches SRP.
+# WPF UI smoke check: renders every page in both themes at supported logical window sizes
+# against test data, then asserts layout, bindings, state gates and virtualization. It never
+# starts the Go core or App startup and never touches SRP.
 #
 # KEEP THIS FILE ASCII-ONLY. Windows PowerShell 5.1 reads BOM-less files as ANSI, so
 # literal CJK text here is decoded as DBCS and can swallow the following line break,
@@ -34,6 +34,7 @@ foreach ($resource in 'Light','Shared') {
 $application.Resources.Add('BoolToVis', (New-Object XCLing.Wpf.Core.BoolToVisibilityConverter))
 $application.Resources.Add('StringToVis', (New-Object XCLing.Wpf.Core.StringToVisibilityConverter))
 $application.Resources.Add('Time', (New-Object XCLing.Wpf.Core.TimeConverter))
+$application.Resources.Add('IconResource', (New-Object XCLing.Wpf.Core.IconResourceConverter))
 foreach ($name in 'Console','Rules','Blocklist','Activity','Settings','About') {
     $vmType = $assembly.GetType('XCLing.Wpf.ViewModels.' + $name + 'ViewModel')
     $viewType = $assembly.GetType('XCLing.Wpf.Views.' + $name + 'View')
@@ -148,21 +149,28 @@ public static class UiSmoke {
             WindowStartupLocation = WindowStartupLocation.Manual, Left = -30000, Top = -30000 };
         try {
             window.Show();
-            Assert(main.NavItems.Count == 5 && main.AboutItem.Key == "about", "Navigation missing pages");
+            Assert(main.NavItems.Count == 4 && main.SettingsItem.Key == "settings" && main.AboutItem.Key == "about", "Navigation missing pages");
             Assert(new Settings().Theme == "light", "Fresh default must be light");
             foreach (string theme in new[] { "light", "dark" }) {
                 ((Settings)typeof(MainViewModel).GetField("_settings", Hidden).GetValue(main)).Theme = theme;
                 ThemeManager.Init(theme);
                 Assert(ThemeManager.Current == theme, "Theme startup not synchronized");
-                var expected = theme == "light" ? "#FFFFFFFF" : "#FF252729";
+                var expected = theme == "light" ? "#FFF4F4F6" : "#FF1A1A1E";
                 Assert(((SolidColorBrush)Application.Current.FindResource("Surface0Brush")).Color.ToString() == expected, "Actual theme mismatch");
-                foreach (int width in new[] { 1100, 900, 760 }) {
-                    window.Width = width; window.Height = width == 1100 ? 700 : width == 900 ? 560 : 480;
+                foreach (int width in new[] { 1180, 1000, 880 }) {
+                    window.Width = width; window.Height = width == 1180 ? 760 : width == 1000 ? 620 : 580;
                     foreach (string key in new[] { "console", "rules", "blocklist", "activity", "settings", "about" }) {
                         Set(main, "CurrentPage", pages[key]);
                         foreach (var nav in main.NavItems) nav.IsActive = nav.Key == key;
+                        main.SettingsItem.IsActive = key == "settings";
                         main.AboutItem.IsActive = key == "about";
+                        var expectedItem = key == "settings" ? main.SettingsItem : key == "about" ? main.AboutItem : main.NavItems.First(n => n.Key == key);
+                        typeof(MainViewModel).GetProperty("CurrentTitle").GetSetMethod(true).Invoke(main, new object[] { expectedItem.Title });
+                        typeof(MainViewModel).GetProperty("CurrentIcon").GetSetMethod(true).Invoke(main, new object[] { expectedItem.Icon });
+                        Layout(window);
                         Render(window, Path.Combine(output, theme + "-" + key + "-" + width + ".png"), 96);
+                        Assert(main.CurrentTitle == (key == "settings" ? main.SettingsItem.Title : key == "about" ? main.AboutItem.Title : main.NavItems.First(n => n.Key == key).Title), "Navigation title mismatch: " + key);
+                        Assert(main.CurrentIcon != null, "Navigation icon missing: " + key);
                         if (key == "rules") {
                             var combo = Descendants<ComboBox>(window).First();
                             combo.IsDropDownOpen = true; Layout(window);
@@ -185,6 +193,9 @@ public static class UiSmoke {
             // preset cannot push already-read content down while the user watches it.
             Set(main, "CurrentPage", pages["blocklist"]);
             foreach (var nav in main.NavItems) nav.IsActive = nav.Key == "blocklist";
+            main.SettingsItem.IsActive = false;
+            main.AboutItem.IsActive = false;
+            typeof(MainViewModel).GetProperty("CurrentTitle").GetSetMethod(true).Invoke(main, new object[] { main.NavItems.First(n => n.Key == "blocklist").Title });
             Layout(window);
             var presetTitle = Descendants<TextBlock>(window).First(t => t.Text == "\u5382\u5546\u9884\u8bbe");
             var ruleTitle = Descendants<TextBlock>(window).First(t => t.Text == "\u5f53\u524d\u62e6\u622a\u89c4\u5219");
@@ -192,9 +203,11 @@ public static class UiSmoke {
             double ruleTop = ruleTitle.TransformToAncestor(window).Transform(new Point(0, 0)).Y;
             Assert(presetTop < ruleTop, "Vendor presets must render above the rule list");
             Render(window, Path.Combine(output, "blocklist-order.png"), 96);
-            Set(main, "CurrentPage", console); window.Width = 900; window.Height = 560;
+            Set(main, "CurrentPage", console); window.Width = 900; window.Height = 580;
             foreach (var nav in main.NavItems) nav.IsActive = nav.Key == "console";
+            main.SettingsItem.IsActive = false;
             main.AboutItem.IsActive = false;
+            typeof(MainViewModel).GetProperty("CurrentTitle").GetSetMethod(true).Invoke(main, new object[] { main.NavItems.First(n => n.Key == "console").Title });
             foreach (string state in new[] { "unmanaged", "locked", "unlocked", "attention" }) {
                 status.ProtectionState = state; status.CanApply = state == "unmanaged";
                 status.Reason = state == "unmanaged" ? "\u5c1a\u672a\u542f\u7528\u4fdd\u62a4" : state == "unlocked" ? "\u89c4\u5219\u4ecd\u4fdd\u7559" : state == "attention" ? "\u7b56\u7565\u5df2\u88ab\u5916\u90e8\u4fee\u6539" : "\u767d\u540d\u5355\u6a21\u5f0f\u5df2\u542f\u7528";
@@ -225,17 +238,21 @@ public static class UiSmoke {
             // Audit capability unavailable: surface the backend reason instead of "no blocked events".
             activity.Events.Clear();
             Set(activity, "Capability", new AuditCapability { Available = false, Reason = "Sample audit reason" });
-            typeof(ViewModelBase).GetMethod("Raise", Hidden).Invoke(activity, new object[] { "HasEvents" });
+            typeof(ViewModelBase).GetMethod("Raise", Hidden).Invoke(activity, new object[] { "Capability" });
+            Set(activity, "Loading", false);
+            Set(activity, "Error", "");
             Assert(activity.ShowAuditUnavailable && !activity.ShowEmptyEvents && activity.AuditUnavailableText == "Sample audit reason", "Audit-unavailable empty state not applied");
             Set(main, "CurrentPage", activity);
             foreach (var nav in main.NavItems) nav.IsActive = nav.Key == "activity";
+            main.SettingsItem.IsActive = false;
+            main.AboutItem.IsActive = false;
             Render(window, Path.Combine(output, "state-audit-unavailable.png"), 96);
             Set(main, "CurrentPage", console);
             var confirm = new XCLing.Wpf.Views.ConfirmWindow(); confirm.Close();
             var donate = new XCLing.Wpf.Views.DonateWindow(); donate.Close();
             File.WriteAllLines(Path.Combine(output, "binding-errors.txt"), trace.Errors);
             Assert(trace.Errors.Count == 0, "WPF binding errors; inspect binding-errors.txt");
-            Console.WriteLine("PASS: 6 pages, 2 themes, 3 window sizes; 100/125/150% bitmap scales; state/permission gates, dropdown, tabs, virtualization, dialogs, images and binding diagnostics. No core or App startup executed.");
+            Console.WriteLine("PASS: 6 pages, 2 themes, 1180/1000/880 logical window sizes; state/permission gates, dropdown, tabs, virtualization, dialogs, images, navigation metadata and binding diagnostics. No core or App startup executed.");
         } finally { window.Close(); PresentationTraceSources.DataBindingSource.Listeners.Remove(trace); }
     }
 }

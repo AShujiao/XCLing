@@ -91,6 +91,7 @@ namespace XCLing.Wpf
 
             _main = new MainViewModel(_api, appName, coreVersion, ConfirmDialog, ShowDonateDialog);
             _window = new MainWindow { DataContext = _main };
+            _main.PageChanged += (s, args) => _window.PlayPageAnimation();
             _window.Closing += (s, args) =>
             {
                 if (!_exiting)

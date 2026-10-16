@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media;
 
 namespace XCLing.Wpf.Core
 {
@@ -28,6 +29,23 @@ namespace XCLing.Wpf.Core
                 flag = !flag;
             }
             return flag ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
+            throw new NotSupportedException();
+    }
+
+    /// <summary>通过资源键读取共享 Geometry 图标。</summary>
+    public sealed class IconResourceConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var key = value as string;
+            if (string.IsNullOrWhiteSpace(key) || Application.Current == null)
+            {
+                return null;
+            }
+            return Application.Current.TryFindResource(key) as Geometry;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>

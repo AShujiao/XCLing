@@ -1,84 +1,32 @@
 <UserControl x:Class="XCLing.Wpf.Views.SettingsView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" FontFamily="{StaticResource PgFontFamily}">
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Margin="0,0,8,0">
-            <TextBlock Text="设置" Style="{StaticResource PgPageTitle}" Margin="0,0,0,24" />
-            <Border Style="{StaticResource PgCard}">
+            <TextBlock Text="设置" Style="{StaticResource PgPageTitleCompact}" Margin="0,0,0,4" />
+            <TextBlock Text="调整外观、系统行为和兼容性选项" Style="{StaticResource PgCaption}" Margin="0,0,0,14" />
+
+            <TextBlock Text="外观" Style="{StaticResource PgSectionLabel}" />
+            <Border Style="{StaticResource PgList}">
+                <Grid Margin="14,6"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                    <StackPanel Margin="0,0,16,0" VerticalAlignment="Center"><TextBlock Text="显示主题" /><TextBlock Text="选择应用的显示主题" Style="{StaticResource PgCaption}" Margin="0,3,0,0" /></StackPanel>
+                    <WrapPanel Grid.Column="1" VerticalAlignment="Center"><RadioButton Content="浅色" GroupName="Theme" IsChecked="{Binding IsLightTheme}" Style="{StaticResource PgSegment}" Margin="0,0,7,0" /><RadioButton Content="深色" GroupName="Theme" IsChecked="{Binding IsDarkTheme}" Style="{StaticResource PgSegment}" /></WrapPanel>
+                </Grid>
+            </Border>
+
+            <TextBlock Text="通用" Style="{StaticResource PgSectionLabel}" />
+            <Border Style="{StaticResource PgList}">
                 <StackPanel>
-                    <TextBlock Text="外观" Style="{StaticResource PgCardTitle}" Margin="0,0,0,14" />
-                    <WrapPanel>
-                        <RadioButton Content="浅色" GroupName="Theme" IsChecked="{Binding IsLightTheme}" Style="{StaticResource PgSegment}" Margin="0,0,8,6" />
-                        <RadioButton Content="深色" GroupName="Theme" IsChecked="{Binding IsDarkTheme}" Style="{StaticResource PgSegment}" Margin="0,0,0,6" />
-                    </WrapPanel>
+                    <Border Style="{StaticResource PgSettingRow}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel Margin="0,0,16,0"><TextBlock Text="开机自动启动" /><TextBlock Text="登录后运行，最小化到系统托盘。" Style="{StaticResource PgCaption}" Margin="0,3,0,0" /></StackPanel><CheckBox Grid.Column="1" IsChecked="{Binding AutoStartEnabled}" Style="{StaticResource PgCheckBox}" VerticalAlignment="Center" AutomationProperties.Name="开机自动启动" /></Grid></Border>
+                    <Border Style="{StaticResource PgSettingRow}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel Margin="0,0,16,0"><TextBlock Text="定时自动关机" /><TextBlock Text="每天在指定时间关机，保留 60 秒取消时间。" Style="{StaticResource PgCaption}" Margin="0,3,0,0" /></StackPanel><CheckBox Grid.Column="1" IsChecked="{Binding ShutdownEnabled}" Style="{StaticResource PgCheckBox}" VerticalAlignment="Center" AutomationProperties.Name="定时自动关机" /></Grid></Border>
+                    <Border Style="{StaticResource PgSettingRow}" Visibility="{Binding ShutdownEnabled, Converter={StaticResource BoolToVis}}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel Margin="0,0,16,0"><TextBlock Text="关机时间" /><TextBlock Text="每天在指定时间执行关机。" Style="{StaticResource PgCaption}" Margin="0,3,0,0" /></StackPanel><ComboBox Grid.Column="1" ItemsSource="{Binding ShutdownHours}" SelectedItem="{Binding SelectedShutdownHour}" Style="{StaticResource PgComboBox}" Width="110" AutomationProperties.Name="关机时间"><ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding StringFormat={}{0:00}:00}" /></DataTemplate></ComboBox.ItemTemplate></ComboBox></Grid></Border>
                 </StackPanel>
             </Border>
-            <Border Style="{StaticResource PgCard}">
+            <Border Style="{StaticResource PgCallout}" Background="{DynamicResource WarningSoftBrush}" BorderBrush="{DynamicResource WarningHoverBrush}" Visibility="{Binding ShowCancelShutdown, Converter={StaticResource BoolToVis}}"><DockPanel><Button DockPanel.Dock="Right" Content="取消本次关机" Command="{Binding CancelShutdownCommand}" Style="{StaticResource PgButton}" Margin="12,0,0,0" /><TextBlock Text="已到设定关机时间" Foreground="{DynamicResource WarningBrush}" TextWrapping="Wrap" VerticalAlignment="Center" /></DockPanel></Border>
+
+            <TextBlock Text="兼容性" Style="{StaticResource PgSectionLabel}" />
+            <Border Style="{StaticResource PgList}">
                 <StackPanel>
-                    <TextBlock Text="通用" Style="{StaticResource PgCardTitle}" Margin="0,0,0,18" />
-                    <Grid Margin="0,0,0,20">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Margin="0,0,20,0">
-                            <TextBlock Text="开机自动启动" />
-                            <TextBlock Text="登录后运行，最小化到系统托盘。" Style="{StaticResource PgCaption}" Margin="0,4,0,0" />
-                        </StackPanel>
-                        <CheckBox Grid.Column="1" IsChecked="{Binding AutoStartEnabled}" Style="{StaticResource PgCheckBox}" VerticalAlignment="Center" AutomationProperties.Name="开机自动启动" />
-                    </Grid>
-                    <Grid Margin="0,0,0,14">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Margin="0,0,20,0">
-                            <TextBlock Text="定时自动关机" />
-                            <TextBlock Text="每天在指定时间关机，保留 60 秒取消时间。" Style="{StaticResource PgCaption}" Margin="0,4,0,0" />
-                        </StackPanel>
-                        <CheckBox Grid.Column="1" IsChecked="{Binding ShutdownEnabled}" Style="{StaticResource PgCheckBox}" VerticalAlignment="Center" AutomationProperties.Name="定时自动关机" />
-                    </Grid>
-                    <DockPanel Visibility="{Binding ShutdownEnabled, Converter={StaticResource BoolToVis}}" Margin="0,0,0,8">
-                        <TextBlock Text="关机时间" Margin="0,0,18,0" VerticalAlignment="Center" />
-                        <ComboBox ItemsSource="{Binding ShutdownHours}" SelectedItem="{Binding SelectedShutdownHour}" Style="{StaticResource PgComboBox}" Width="110" HorizontalAlignment="Left" AutomationProperties.Name="关机时间">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding StringFormat={}{0:00}:00}" />
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                    </DockPanel>
-                    <Border Background="{DynamicResource WarningHoverBrush}" Padding="12" Margin="0,10,0,0" Visibility="{Binding ShowCancelShutdown, Converter={StaticResource BoolToVis}}">
-                        <DockPanel>
-                            <Button DockPanel.Dock="Right" Content="取消本次关机" Command="{Binding CancelShutdownCommand}" Style="{StaticResource PgButton}" Margin="12,0,0,0" />
-                            <TextBlock Text="已到设定关机时间" Foreground="{DynamicResource WarningBrush}" TextWrapping="Wrap" VerticalAlignment="Center" />
-                        </DockPanel>
-                    </Border>
-                </StackPanel>
-            </Border>
-            <Border Style="{StaticResource PgCard}">
-                <StackPanel>
-                    <TextBlock Text="兼容性" Style="{StaticResource PgCardTitle}" Margin="0,0,0,18" />
-                    <Grid Margin="0,0,0,20">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Margin="0,0,20,0">
-                            <TextBlock Text="允许商店应用" TextWrapping="Wrap" />
-                            <TextBlock Text="适用于支持 UWP 的 Windows 系统；启用白名单时生效。" Style="{StaticResource PgCaption}" Margin="0,4,0,0" />
-                        </StackPanel>
-                        <CheckBox Grid.Column="1" IsChecked="{Binding AllowPackagedApps}" Style="{StaticResource PgCheckBox}" VerticalAlignment="Center" AutomationProperties.Name="允许商店应用" />
-                    </Grid>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Margin="0,0,20,0">
-                            <TextBlock Text="允许 Defender 更新" TextWrapping="Wrap" />
-                            <TextBlock Text="保留防护组件更新所需的信任路径；启用白名单时生效。" Style="{StaticResource PgCaption}" Margin="0,4,0,0" />
-                        </StackPanel>
-                        <CheckBox Grid.Column="1" IsChecked="{Binding AllowDefenderUpdates}" Style="{StaticResource PgCheckBox}" VerticalAlignment="Center" AutomationProperties.Name="允许 Defender 更新" />
-                    </Grid>
+                    <Border Style="{StaticResource PgSettingRow}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel Margin="0,0,16,0"><TextBlock Text="允许商店应用" TextWrapping="Wrap" /><TextBlock Text="适用于支持 UWP 的 Windows 系统；启用白名单时生效。" Style="{StaticResource PgCaption}" Margin="0,3,0,0" /></StackPanel><CheckBox Grid.Column="1" IsChecked="{Binding AllowPackagedApps}" Style="{StaticResource PgCheckBox}" VerticalAlignment="Center" AutomationProperties.Name="允许商店应用" /></Grid></Border>
+                    <Border Style="{StaticResource PgSettingRow}" BorderThickness="0"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel Margin="0,0,16,0"><TextBlock Text="允许 Defender 更新" TextWrapping="Wrap" /><TextBlock Text="保留防护组件更新所需的信任路径；启用白名单时生效。" Style="{StaticResource PgCaption}" Margin="0,3,0,0" /></StackPanel><CheckBox Grid.Column="1" IsChecked="{Binding AllowDefenderUpdates}" Style="{StaticResource PgCheckBox}" VerticalAlignment="Center" AutomationProperties.Name="允许 Defender 更新" /></Grid></Border>
                 </StackPanel>
             </Border>
         </StackPanel>

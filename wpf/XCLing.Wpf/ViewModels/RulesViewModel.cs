@@ -89,7 +89,18 @@ namespace XCLing.Wpf.ViewModels
         public string Search { get => _search; set { if (Set(ref _search, value)) { ApplyFilter(); } } }
         public bool Busy { get => _busy; private set => Set(ref _busy, value); }
         public bool Scanning { get => _scanning; private set => Set(ref _scanning, value); }
-        public bool ShowScanner { get => _showScanner; set => Set(ref _showScanner, value); }
+        public bool ShowScanner
+        {
+            get => _showScanner;
+            set
+            {
+                if (Set(ref _showScanner, value))
+                {
+                    Raise(nameof(ScannerButtonText));
+                }
+            }
+        }
+        public string ScannerButtonText => ShowScanner ? "收起扫描" : "扫描已安装程序";
         public string Error { get => _error; private set => Set(ref _error, value); }
 
         public Task OnActivatedAsync() => RefreshStatusAsync();

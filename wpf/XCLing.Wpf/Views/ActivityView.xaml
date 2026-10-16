@@ -1,84 +1,12 @@
 <UserControl x:Class="XCLing.Wpf.Views.ActivityView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" FontFamily="{StaticResource PgFontFamily}">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition />
-        </Grid.RowDefinitions>
-        <Grid Margin="0,0,0,14">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <StackPanel Margin="0,0,12,0">
-                <TextBlock Text="运行记录" Style="{StaticResource PgPageTitle}" />
-                <TextBlock Text="{Binding StatusText}" Style="{StaticResource PgCaption}" Margin="0,5,0,0" />
-            </StackPanel>
-            <Button Grid.Column="1" Content="{StaticResource RefreshIcon}" Command="{Binding RefreshCommand}" Style="{StaticResource PgIconButton}" ToolTip="刷新记录" AutomationProperties.Name="刷新记录" />
-        </Grid>
-        <Border Grid.Row="1" Background="{DynamicResource DangerHoverBrush}" Padding="12,10" Margin="0,0,0,12" Visibility="{Binding Error, Converter={StaticResource StringToVis}}">
-            <TextBlock Text="{Binding Error}" Foreground="{DynamicResource DangerBrush}" TextWrapping="Wrap" />
-        </Border>
-        <TabControl Grid.Row="2" Style="{StaticResource PgTabs}" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}" Margin="0,0,0,14">
-            <TabItem Header="拦截记录" />
-            <TabItem Header="操作记录" />
-        </TabControl>
-        <Grid Grid.Row="3" Margin="0,0,0,10">
-            <TextBlock Text="正在读取记录..." Style="{StaticResource PgCaption}" Visibility="{Binding Loading, Converter={StaticResource BoolToVis}}" />
-            <DockPanel Visibility="{Binding ShowEnableAudit, Converter={StaticResource BoolToVis}}" Margin="0,22,0,0">
-                <Button DockPanel.Dock="Right" Content="启用日志" Command="{Binding EnableAuditCommand}" Style="{StaticResource PgButton}" Margin="12,0,0,0" />
-                <TextBlock Text="事件日志未启用，后续拦截记录可能不可用。" Style="{StaticResource PgCaption}" VerticalAlignment="Center" />
-            </DockPanel>
-        </Grid>
-        <Grid Grid.Row="4" Visibility="{Binding ShowInterceptionTab, Converter={StaticResource BoolToVis}}">
-            <DataGrid Style="{StaticResource PgDataGrid}" ItemsSource="{Binding Events}" SelectedItem="{Binding SelectedEvent}" Visibility="{Binding HasEvents, Converter={StaticResource BoolToVis}}">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="时间" Binding="{Binding Timestamp, Converter={StaticResource Time}}" Width="155" />
-                    <DataGridTextColumn Header="被拦截程序" Binding="{Binding ExecutablePath}" Width="*" MinWidth="160">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource PgPath}" />
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
-                    <DataGridTextColumn Header="用户" Binding="{Binding User}" Width="90">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource PgPath}" />
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
-                    <DataGridTemplateColumn Header="操作" Width="100">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Button Content="解除限制" Command="{Binding DataContext.UnblockCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{StaticResource PgButton}" Padding="8,3" MinHeight="28" ToolTip="{Binding Message}" />
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-                <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow">
-                        <Setter Property="ToolTip" Value="{Binding Message}" />
-                    </Style>
-                </DataGrid.RowStyle>
-            </DataGrid>
-            <TextBlock Text="当前查询没有返回拦截记录。" Style="{StaticResource PgCaption}" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding ShowEmptyEvents, Converter={StaticResource BoolToVis}}" />
-            <TextBlock Text="{Binding AuditUnavailableText}" Style="{StaticResource PgCaption}" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="420" Visibility="{Binding ShowAuditUnavailable, Converter={StaticResource BoolToVis}}" />
-        </Grid>
-        <Grid Grid.Row="4" Visibility="{Binding ShowOperationTab, Converter={StaticResource BoolToVis}}">
-            <DataGrid Style="{StaticResource PgDataGrid}" ItemsSource="{Binding Operations}" Visibility="{Binding HasOperations, Converter={StaticResource BoolToVis}}">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="时间" Binding="{Binding CreatedAt, Converter={StaticResource Time}}" Width="155" />
-                    <DataGridTextColumn Header="操作" Binding="{Binding ActionLabel}" Width="145" />
-                    <DataGridTextColumn Header="结果" Binding="{Binding Message}" Width="*" MinWidth="150">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
-                                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
-                                <Setter Property="ToolTip" Value="{Binding Message}" />
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
-                </DataGrid.Columns>
-            </DataGrid>
-            <TextBlock Text="暂无操作记录" Style="{StaticResource PgCaption}" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding ShowEmptyOperations, Converter={StaticResource BoolToVis}}" />
+    <Grid><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition /></Grid.RowDefinitions>
+        <Grid Margin="0,0,0,14"><Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel Margin="0,0,12,0"><TextBlock Text="运行记录" Style="{StaticResource PgPageTitleCompact}" /><TextBlock Text="{Binding StatusText}" Style="{StaticResource PgCaption}" Margin="0,4,0,0" /></StackPanel><Button Grid.Column="1" Content="{StaticResource RefreshIcon}" Command="{Binding RefreshCommand}" Style="{StaticResource PgIconButton}" ToolTip="刷新记录" AutomationProperties.Name="刷新记录" VerticalAlignment="Center" /></Grid>
+        <Border Grid.Row="1" Style="{StaticResource PgCallout}" Background="{DynamicResource DangerSoftBrush}" BorderBrush="{DynamicResource DangerHoverBrush}" Visibility="{Binding Error, Converter={StaticResource StringToVis}}"><TextBlock Text="{Binding Error}" Foreground="{DynamicResource DangerBrush}" TextWrapping="Wrap" /></Border>
+        <Border Grid.Row="2" Background="{DynamicResource Surface2Brush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="9" Padding="5,3" Margin="0,0,0,12"><TabControl Style="{StaticResource PgTabs}" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}"><TabItem Header="拦截记录" /><TabItem Header="操作记录" /></TabControl></Border>
+        <Grid Grid.Row="3"><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition /></Grid.RowDefinitions>
+            <Grid Grid.Row="0" Margin="0,0,0,10"><TextBlock Text="正在读取记录..." Style="{StaticResource PgCaption}" Visibility="{Binding Loading, Converter={StaticResource BoolToVis}}" /><Border Style="{StaticResource PgCallout}" Background="{DynamicResource WarningSoftBrush}" BorderBrush="{DynamicResource WarningHoverBrush}" Visibility="{Binding ShowEnableAudit, Converter={StaticResource BoolToVis}}" Margin="0,4,0,0"><DockPanel><Button DockPanel.Dock="Right" Content="启用日志" Command="{Binding EnableAuditCommand}" Style="{StaticResource PgButton}" Margin="12,0,0,0" /><TextBlock Text="事件日志未启用，后续拦截记录可能不可用。" Style="{StaticResource PgCaption}" VerticalAlignment="Center" /></DockPanel></Border></Grid>
+            <Grid Grid.Row="1" Visibility="{Binding ShowInterceptionTab, Converter={StaticResource BoolToVis}}"><DataGrid Style="{StaticResource PgDataGrid}" ItemsSource="{Binding Events}" SelectedItem="{Binding SelectedEvent}" Visibility="{Binding HasEvents, Converter={StaticResource BoolToVis}}"><DataGrid.Columns><DataGridTextColumn Header="时间" Binding="{Binding Timestamp, Converter={StaticResource Time}}" Width="155" /><DataGridTextColumn Header="被拦截程序" Binding="{Binding ExecutablePath}" Width="*" MinWidth="160"><DataGridTextColumn.ElementStyle><Style TargetType="TextBlock" BasedOn="{StaticResource PgPath}" /></DataGridTextColumn.ElementStyle></DataGridTextColumn><DataGridTextColumn Header="用户" Binding="{Binding User}" Width="90"><DataGridTextColumn.ElementStyle><Style TargetType="TextBlock" BasedOn="{StaticResource PgPath}" /></DataGridTextColumn.ElementStyle></DataGridTextColumn><DataGridTemplateColumn Header="操作" Width="110"><DataGridTemplateColumn.CellTemplate><DataTemplate><Button Content="解除限制" Command="{Binding DataContext.UnblockCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{StaticResource PgButton}" Padding="8,3" MinHeight="28" ToolTip="{Binding Message}" /></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn></DataGrid.Columns><DataGrid.RowStyle><Style TargetType="DataGridRow"><Setter Property="ToolTip" Value="{Binding Message}" /></Style></DataGrid.RowStyle></DataGrid><TextBlock Text="当前查询没有返回拦截记录。" Style="{StaticResource PgEmptyState}" Visibility="{Binding ShowEmptyEvents, Converter={StaticResource BoolToVis}}" /><TextBlock Text="{Binding AuditUnavailableText}" Style="{StaticResource PgEmptyState}" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="420" Visibility="{Binding ShowAuditUnavailable, Converter={StaticResource BoolToVis}}" /></Grid>
+            <Grid Grid.Row="1" Visibility="{Binding ShowOperationTab, Converter={StaticResource BoolToVis}}"><DataGrid Style="{StaticResource PgDataGrid}" ItemsSource="{Binding Operations}" Visibility="{Binding HasOperations, Converter={StaticResource BoolToVis}}"><DataGrid.Columns><DataGridTextColumn Header="时间" Binding="{Binding CreatedAt, Converter={StaticResource Time}}" Width="155" /><DataGridTextColumn Header="操作" Binding="{Binding ActionLabel}" Width="145" /><DataGridTextColumn Header="结果" Binding="{Binding Message}" Width="*" MinWidth="150"><DataGridTextColumn.ElementStyle><Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}"><Setter Property="TextTrimming" Value="CharacterEllipsis" /><Setter Property="ToolTip" Value="{Binding Message}" /></Style></DataGridTextColumn.ElementStyle></DataGridTextColumn></DataGrid.Columns></DataGrid><TextBlock Text="暂无操作记录" Style="{StaticResource PgEmptyState}" Visibility="{Binding ShowEmptyOperations, Converter={StaticResource BoolToVis}}" /></Grid>
         </Grid>
     </Grid>
 </UserControl>

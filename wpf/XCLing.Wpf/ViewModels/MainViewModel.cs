@@ -12,15 +12,17 @@ namespace XCLing.Wpf.ViewModels
     {
         private bool _isActive;
 
-        public NavItem(string key, string title, ICommand command)
+        public NavItem(string key, string title, string icon, ICommand command)
         {
             Key = key;
             Title = title;
+            Icon = icon;
             Command = command;
         }
 
         public string Key { get; }
         public string Title { get; }
+        public string Icon { get; }
         public ICommand Command { get; }
 
         public bool IsActive
@@ -49,6 +51,8 @@ namespace XCLing.Wpf.ViewModels
         private readonly Dictionary<string, IPageViewModel> _pages = new Dictionary<string, IPageViewModel>();
         private readonly Settings _settings;
         private object _currentPage;
+        private string _currentTitle = "概览";
+        private string _currentIcon = "HomeIcon";
 
         public MainViewModel(GoApi api, string appName, string coreVersion, Func<ConfirmRequest, bool> confirm, Action showDonate)
         {
@@ -59,13 +63,15 @@ namespace XCLing.Wpf.ViewModels
 
             var services = new AppServices(api, appName, coreVersion, _settings, confirm, Toast, Navigate, showDonate);
 
-            Register(new ConsoleViewModel(services), "概览");
-            Register(new RulesViewModel(services), "白名单");
-            Register(new BlocklistViewModel(services), "黑名单");
-            Register(new ActivityViewModel(services), "运行记录");
-            Register(new SettingsViewModel(services), "设置");
-            Register(new AboutViewModel(services), "关于与捐助");
+            Register(new ConsoleViewModel(services), "概览", "HomeIcon");
+            Register(new RulesViewModel(services), "白名单", "ShieldIcon");
+            Register(new BlocklistViewModel(services), "黑名单", "ListIcon");
+            Register(new ActivityViewModel(services), "运行记录", "ActivityIcon");
+            Register(new SettingsViewModel(services), "设置", "SettingsIcon");
+            Register(new AboutViewModel(services), "关于与捐助", "AboutIcon");
+            SettingsItem = NavItems[NavItems.Count - 2];
             AboutItem = NavItems[NavItems.Count - 1];
+            NavItems.Remove(SettingsItem);
             NavItems.Remove(AboutItem);
             DismissToastCommand = new RelayCommand<ToastItem>(item => Toasts.Remove(item));
         }
@@ -75,9 +81,21 @@ namespace XCLing.Wpf.ViewModels
         /// <summary>本进程共享的设置实例（主题、兼容开关、资源管理器刷新标记）。</summary>
         public Settings Settings => _settings;
         public string FooterText => "核心服务 v" + CoreVersion + " 已连接";
+        public string CurrentTitle
+        {
+            get { return _currentTitle; }
+            private set { Set(ref _currentTitle, value); }
+        }
+        public string CurrentIcon
+        {
+            get { return _currentIcon; }
+            private set { Set(ref _currentIcon, value); }
+        }
+        public event EventHandler PageChanged;
 
         public ObservableCollection<NavItem> NavItems { get; } = new ObservableCollection<NavItem>();
         public ObservableCollection<ToastItem> Toasts { get; } = new ObservableCollection<ToastItem>();
+        public NavItem SettingsItem { get; }
         public NavItem AboutItem { get; }
         public ICommand DismissToastCommand { get; }
 
@@ -90,11 +108,11 @@ namespace XCLing.Wpf.ViewModels
         /// <summary>概览页视图模型，供托盘操作后刷新。</summary>
         public ConsoleViewModel Console => (ConsoleViewModel)_pages["console"];
 
-        private void Register(IPageViewModel page, string title)
+        private void Register(IPageViewModel page, string title, string icon)
         {
             _pages[page.Key] = page;
             var command = new RelayCommand(() => Navigate(page.Key));
-            NavItems.Add(new NavItem(page.Key, title, command));
+            NavItems.Add(new NavItem(page.Key, title, icon, command));
         }
 
         /// <summary>切换到指定页面并触发其数据加载。可从任意线程调用。</summary>
@@ -112,7 +130,11 @@ namespace XCLing.Wpf.ViewModels
                 return;
             }
             CurrentPage = page;
+            CurrentTitle = FindTitle(key);
+            CurrentIcon = FindIcon(key);
+            PageChanged?.Invoke(this, EventArgs.Empty);
             if (showOperations) ((ActivityViewModel)page).SelectedTabIndex = 1;
+            SettingsItem.IsActive = key == "settings";
             AboutItem.IsActive = key == "about";
             foreach (var item in NavItems)
             {
@@ -134,6 +156,46 @@ namespace XCLing.Wpf.ViewModels
             var start = Environment.GetEnvironmentVariable("POLICYGUARD_START_PAGE");
             Navigate(!string.IsNullOrWhiteSpace(start) && _pages.ContainsKey(start) ? start : "console");
             return Task.CompletedTask;
+        }
+
+        private string FindTitle(string key)
+        {
+            if (string.Equals(key, SettingsItem?.Key, StringComparison.OrdinalIgnoreCase))
+            {
+                return SettingsItem.Title;
+            }
+            if (string.Equals(key, AboutItem?.Key, StringComparison.OrdinalIgnoreCase))
+            {
+                return AboutItem.Title;
+            }
+            foreach (var item in NavItems)
+            {
+                if (string.Equals(item.Key, key, StringComparison.OrdinalIgnoreCase))
+                {
+                    return item.Title;
+                }
+            }
+            return "概览";
+        }
+
+        private string FindIcon(string key)
+        {
+            if (string.Equals(key, SettingsItem?.Key, StringComparison.OrdinalIgnoreCase))
+            {
+                return SettingsItem.Icon;
+            }
+            if (string.Equals(key, AboutItem?.Key, StringComparison.OrdinalIgnoreCase))
+            {
+                return AboutItem.Icon;
+            }
+            foreach (var item in NavItems)
+            {
+                if (string.Equals(item.Key, key, StringComparison.OrdinalIgnoreCase))
+                {
+                    return item.Icon;
+                }
+            }
+            return "HomeIcon";
         }
 
         /// <summary>展示一条 4 秒自动消失的提示。线程安全。</summary>

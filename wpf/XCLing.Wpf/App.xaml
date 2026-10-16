@@ -10,6 +10,7 @@
             <core:StringToVisibilityConverter x:Key="StringToVis" />
             <core:BoolToVisibilityConverter x:Key="BoolToVis" />
             <core:TimeConverter x:Key="Time" />
+            <core:IconResourceConverter x:Key="IconResource" />
             <!-- 视图模型 → 视图 映射 -->
             <DataTemplate DataType="{x:Type vm:ConsoleViewModel}">
                 <views:ConsoleView />

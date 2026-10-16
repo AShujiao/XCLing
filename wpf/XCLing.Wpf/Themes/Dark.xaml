@@ -1,23 +1,31 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <SolidColorBrush x:Key="Surface0Brush" Color="#252729" />
-    <SolidColorBrush x:Key="Surface1Brush" Color="#1D1F21" />
-    <SolidColorBrush x:Key="Surface2Brush" Color="#252729" />
-    <SolidColorBrush x:Key="Surface3Brush" Color="#2B2E31" />
-    <SolidColorBrush x:Key="Surface4Brush" Color="#34393D" />
-    <!-- 表格交替行：深色下用比内容底色略亮的一档。 -->
-    <SolidColorBrush x:Key="AltRowBrush" Color="#2A2D30" />
-    <SolidColorBrush x:Key="Text0Brush" Color="#EBEDEF" />
-    <SolidColorBrush x:Key="Text1Brush" Color="#D1D7DC" />
-    <SolidColorBrush x:Key="Text2Brush" Color="#B2B8BD" />
-    <SolidColorBrush x:Key="Text3Brush" Color="#9CA6AE" />
-    <SolidColorBrush x:Key="CardBorderBrush" Color="#414548" />
-    <SolidColorBrush x:Key="Border0Brush" Color="#414548" />
-    <SolidColorBrush x:Key="SelectionBrush" Color="#303D4C" />
-    <SolidColorBrush x:Key="PrimaryBrush" Color="#3983D2" />
-    <SolidColorBrush x:Key="PrimaryHoverBrush" Color="#2A70BA" />
-    <SolidColorBrush x:Key="DangerBrush" Color="#F395A2" />
-    <SolidColorBrush x:Key="WarningBrush" Color="#EBC270" />
-    <SolidColorBrush x:Key="SuccessBrush" Color="#80D7B3" />
-    <SolidColorBrush x:Key="DangerHoverBrush" Color="#442E34" />
-    <SolidColorBrush x:Key="WarningHoverBrush" Color="#3F382A" />
+    <!-- Magpie dark palette: neutral graphite surfaces; indigo is interaction-only. -->
+    <SolidColorBrush x:Key="Surface0Brush" Color="#1A1A1E" />
+    <SolidColorBrush x:Key="Surface1Brush" Color="#232327" />
+    <SolidColorBrush x:Key="Surface2Brush" Color="#1F1F23" />
+    <SolidColorBrush x:Key="Surface3Brush" Color="#2D2D33" />
+    <SolidColorBrush x:Key="Surface4Brush" Color="#36363D" />
+    <SolidColorBrush x:Key="Surface5Brush" Color="#333339" />
+    <SolidColorBrush x:Key="AltRowBrush" Color="#1F1F23" />
+    <SolidColorBrush x:Key="Text0Brush" Color="#EDEDF1" />
+    <SolidColorBrush x:Key="Text1Brush" Color="#B9B9C1" />
+    <SolidColorBrush x:Key="Text2Brush" Color="#8B8B94" />
+    <SolidColorBrush x:Key="Text3Brush" Color="#56565F" />
+    <SolidColorBrush x:Key="CardBorderBrush" Color="#333339" />
+    <SolidColorBrush x:Key="Border0Brush" Color="#2C2C32" />
+    <SolidColorBrush x:Key="SelectionBrush" Color="#33345A" />
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#A5B4FC" />
+    <SolidColorBrush x:Key="PrimaryHoverBrush" Color="#C4B5FD" />
+    <SolidColorBrush x:Key="PrimarySoftBrush" Color="#2B2C47" />
+    <SolidColorBrush x:Key="DangerBrush" Color="#F28B82" />
+    <SolidColorBrush x:Key="DangerHoverBrush" Color="#45272A" />
+    <SolidColorBrush x:Key="DangerSoftBrush" Color="#45272A" />
+    <SolidColorBrush x:Key="WarningBrush" Color="#F2B544" />
+    <SolidColorBrush x:Key="WarningHoverBrush" Color="#3F3220" />
+    <SolidColorBrush x:Key="WarningSoftBrush" Color="#3F3220" />
+    <SolidColorBrush x:Key="SuccessBrush" Color="#6FD99B" />
+    <SolidColorBrush x:Key="SuccessSoftBrush" Color="#1E3A2B" />
+    <SolidColorBrush x:Key="InfoBrush" Color="#A5B4FC" />
+    <SolidColorBrush x:Key="InfoSoftBrush" Color="#2B2C47" />
+    <SolidColorBrush x:Key="OverlayBrush" Color="#E6222A31" />
 </ResourceDictionary>
