@@ -44,7 +44,7 @@ func TestParseVersion(t *testing.T) {
 	}
 }
 
-// fakeGitHub 返回可定制的 latest release 响应，并把本地版本固定为 0.3.16。
+// fakeGitHub 返回可定制的 latest release 响应，并把本地版本固定为 0.3.17。
 func fakeGitHub(t *testing.T, status int, body string) (*httptest.Server, *UpdateService) {
 	t.Helper()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -57,19 +57,19 @@ func fakeGitHub(t *testing.T, status int, body string) (*httptest.Server, *Updat
 	}))
 	svc := NewUpdateService()
 	svc.endpoint = srv.URL
-	svc.currentVersion = "0.3.16"
+	svc.currentVersion = "0.3.17"
 	return srv, svc
 }
 
 func TestCheckUpdateHasUpdate(t *testing.T) {
 	srv, svc := fakeGitHub(t, http.StatusOK, `{
-		"tag_name": "v0.3.17",
-		"published_at": "2026-08-18T00:00:00Z",
-		"html_url": "https://github.com/AShujiao/XCLing/releases/tag/v0.3.17",
-		"body": "修复若干问题",
+		"tag_name": "v0.3.18",
+		"published_at": "2026-10-16T00:00:00Z",
+		"html_url": "https://github.com/AShujiao/XCLing/releases/tag/v0.3.18",
+		"body": "界面重构与稳定性修复",
 		"assets": [
 			{"name": "README.md", "size": 100},
-			{"name": "XCLing-Setup-0.3.17.exe", "size": 25165824}
+			{"name": "星陈守护-Setup-0.3.18.exe", "size": 25165824}
 		]
 	}`)
 	defer srv.Close()
@@ -81,10 +81,10 @@ func TestCheckUpdateHasUpdate(t *testing.T) {
 	if !info.HasUpdate {
 		t.Fatalf("expected HasUpdate=true, got false (latest=%q current=%q)", info.LatestVersion, info.CurrentVersion)
 	}
-	if info.LatestVersion != "0.3.17" {
-		t.Errorf("LatestVersion = %q, want 0.3.17 (v 前缀应去掉)", info.LatestVersion)
+	if info.LatestVersion != "0.3.18" {
+		t.Errorf("LatestVersion = %q, want 0.3.18 (v 前缀应去掉)", info.LatestVersion)
 	}
-	if info.ReleaseURL == "" || info.AssetName != "XCLing-Setup-0.3.17.exe" || info.AssetSize != 25165824 {
+	if info.ReleaseURL == "" || info.AssetName != "星陈守护-Setup-0.3.18.exe" || info.AssetSize != 25165824 {
 		t.Errorf("unexpected payload: %+v", info)
 	}
 	if info.CheckedAt == "" {
@@ -93,7 +93,7 @@ func TestCheckUpdateHasUpdate(t *testing.T) {
 }
 
 func TestCheckUpdateAlreadyLatest(t *testing.T) {
-	srv, svc := fakeGitHub(t, http.StatusOK, `{"tag_name": "0.3.16"}`)
+	srv, svc := fakeGitHub(t, http.StatusOK, `{"tag_name": "0.3.17"}`)
 	defer srv.Close()
 
 	info, err := svc.CheckUpdate()

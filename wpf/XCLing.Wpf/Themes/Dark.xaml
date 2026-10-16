@@ -1,5 +1,4 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- Magpie dark palette: neutral graphite surfaces; indigo is interaction-only. -->
     <SolidColorBrush x:Key="Surface0Brush" Color="#1A1A1E" />
     <SolidColorBrush x:Key="Surface1Brush" Color="#232327" />
     <SolidColorBrush x:Key="Surface2Brush" Color="#1F1F23" />

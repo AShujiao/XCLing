@@ -28,7 +28,6 @@
     <Duration x:Key="NormalDuration">0:0:0.22</Duration>
     <Duration x:Key="SlowDuration">0:0:0.32</Duration>
     <QuadraticEase x:Key="PgEase" EasingMode="EaseOut" />
-    <!-- Magpie uses quiet bordered surfaces; keep elevation only for transient popups. -->
     <DropShadowEffect x:Key="PgCardShadow" Color="#55000000" BlurRadius="14" ShadowDepth="2" Direction="270" Opacity="0.09" />
 
     <Style x:Key="PgFocus" TargetType="Control">
@@ -467,7 +466,6 @@
     <Style x:Key="PgToast" TargetType="Border"><Setter Property="Opacity" Value="1" /></Style>
     <DataTemplate x:Key="PgBadgeTemplate"><Border Style="{StaticResource PgStatusBadge}"><TextBlock Text="{Binding}" Foreground="{DynamicResource Text1Brush}" FontSize="12" /></Border></DataTemplate>
 
-    <!-- Magpie-inspired page primitives: quiet surfaces, compact rows, and one border per list. -->
     <Style x:Key="PgSurface" TargetType="Border" BasedOn="{StaticResource PgCard}">
         <Setter Property="CornerRadius" Value="12" />
         <Setter Property="Padding" Value="16" />

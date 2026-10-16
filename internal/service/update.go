@@ -7,7 +7,7 @@ package service
 //   - 超时、失败一律返回可读错误，绝不阻塞或影响其他服务。
 //
 // 配套发布约定：GitHub Release 的 tag_name 与仓库根 VERSION 对齐（可带 v 前缀，
-// 如 v0.3.16）；安装包资产由 build-installer.ps1 产出后随 release 上传。
+// 如 v0.3.18）；安装包资产由 build-installer.ps1 产出后随 release 上传。
 
 import (
 	"encoding/json"

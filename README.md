@@ -6,7 +6,7 @@
 
 基于 Windows 软件限制策略（SRP）的桌面管理工具，用白名单控制允许运行的软件，或用黑名单限制指定程序。提供策略备份、临时解锁、重新锁定和恢复原状操作，适合需要限制软件运行的个人电脑。
 
-原生 WPF 界面，支持明亮与深色主题，无需 WebView2。当前源码版本为 **0.3.17**，更新内容见 [更新日志](changelog.md)。
+原生 WPF 界面，支持明亮与深色主题，无需 WebView2。当前源码版本为 **0.3.18**，更新内容见 [更新日志](changelog.md)。
 
 [下载安装包](https://github.com/AShujiao/XCLing/releases) · [反馈问题](https://github.com/AShujiao/XCLing/issues) · [源代码](https://github.com/AShujiao/XCLing)
 
@@ -183,7 +183,7 @@ UI 验证脚本使用测试数据检查页面、主题、窗口尺寸、绑定�
 
 版本号统一维护在 [VERSION](VERSION)，构建脚本将其用于应用与安装包。每次更新在 [changelog.md](changelog.md) 顶部补充对应版本的新增、优化、修复及兼容性说明。
 
-发布时，GitHub Release 标签应与 `VERSION` 对齐，例如 `v0.3.17`，并上传对应安装包。应用内检查更新读取 GitHub 最新 Release，修改源码版本号本身不会发布更新。
+发布时，GitHub Release 标签应与 `VERSION` 对齐，例如 `v0.3.18`，并上传对应安装包。应用内检查更新读取 GitHub 最新 Release，修改源码版本号本身不会发布更新。
 
 ## 反馈与支持
 
